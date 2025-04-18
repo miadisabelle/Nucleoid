@@ -1,10 +1,10 @@
+import $CALL from "../$nuc/$CALL";
 import $Identifier from "./$Identifier";
 import $Node from "./$Node";
-import graph from "../../graph";
-import $CALL from "../$nuc/$CALL";
 import Expression from "../../Expression";
-import _ from "lodash";
 import FUNCTION from "../../nuc/FUNCTION";
+import _ from "lodash";
+import graph from "../../graph";
 import serialize from "../../lib/serialize";
 import stack from "../../stack";
 

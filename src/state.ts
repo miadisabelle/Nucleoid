@@ -1,9 +1,8 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-eval */
 const $ = {
   classes: [],
 };
 const state = $;
+
 const _transaction = require("./transaction");
 const { $: $graph } = require("./graph");
 const { event } = require("./event");
@@ -39,19 +38,22 @@ function del(scope, variable) {
   return eval(`delete state.${variable}`);
 }
 
-module.exports.throw = (scope, exception) => eval(`throw ${exception}`);
+const throwException = (scope, exception) => eval(`throw ${exception}`);
 
 function clear() {
-  for (let property in $) {
+  for (const property in $) {
     delete $[property];
   }
 
   $["classes"] = [];
 }
 
-module.exports.$ = $;
-module.exports.assign = assign;
-module.exports.call = call;
-module.exports.expression = expression;
-module.exports.clear = clear;
-module.exports.delete = del;
+module.exports = {
+  $,
+  assign,
+  call,
+  expression,
+  clear,
+  delete: del,
+  throw: throwException,
+};

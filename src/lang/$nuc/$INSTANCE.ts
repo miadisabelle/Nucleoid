@@ -1,12 +1,13 @@
+import { Expression, Identifier, Pattern } from "acorn";
+
 import $ from "./$";
-import graph from "../../graph";
-import CLASS from "../../nuc/CLASS";
 import $Identifier from "../ast/$Identifier";
-import random from "../../lib/random";
+import CLASS from "../../nuc/CLASS";
 import Instruction from "../../Instruction";
 import OBJECT from "../../nuc/OBJECT";
 import OBJECT$CLASS from "../../nuc/OBJECT$CLASS";
-import { Identifier, Pattern, Expression } from "acorn";
+import graph from "../../graph";
+import random from "../../lib/random";
 
 function build(
   cls: Identifier,
@@ -37,14 +38,24 @@ class $INSTANCE extends $ {
 
   run(scope) {
     const cls = new $Identifier(`$${this.cls.name}`);
-    const name = new $Identifier(this.nme);
-    const args = this.args.map((arg) => new $Identifier(arg));
+    const name = this.nme ? new $Identifier(this.nme) : null;
+
+    // Fix: Map each arg through proper handling based on its type
+    const args = this.args.map((arg) => {
+      // Handle different expression types as needed
+      if (arg.type === "Identifier") {
+        return new $Identifier(arg);
+      } else {
+        // For other expression types, you might need different handling
+        return new $Identifier(arg);
+      }
+    });
 
     if (!graph.retrieve(cls)) {
       throw ReferenceError(`${cls} is not defined`);
     }
 
-    if (this.obj && name.toString(scope) === "value") {
+    if (this.obj && name && name.toString(scope) === "value") {
       throw TypeError("Cannot use 'value' as a property");
     }
 

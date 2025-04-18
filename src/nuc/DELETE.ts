@@ -1,19 +1,30 @@
-const state = require("../state");
-const graph = require("../graph");
-const Instruction = require("../Instruction");
-const NODE = require("./NODE");
+import Instruction from "../Instruction";
+import NODE from "./NODE";
+import graph from "../graph";
+import state from "../state";
+
+interface Scope {
+  root: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface Variable {
+  key: string;
+}
 
 class DELETE {
-  before() {}
+  variable?: Variable;
 
-  run(scope) {
+  before(): void {}
+
+  run(scope: Scope): { next?: Instruction[]; value: boolean } {
     if (this.variable) {
       const key = this.variable.key;
       state.delete(scope, key);
 
-      let list = [];
+      const list: Instruction[] = [];
 
-      for (let node in graph.retrieve(key).next) {
+      for (const node in graph.retrieve(key).next) {
         const statement = graph.retrieve(node);
         list.push(
           new Instruction(scope.root, statement, false, true, false, false)
@@ -26,9 +37,9 @@ class DELETE {
     }
   }
 
-  beforeGraph() {}
+  beforeGraph(): void {}
 
-  graph() {
+  graph(): void {
     if (!this.variable) {
       return;
     }
@@ -53,4 +64,4 @@ class DELETE {
   }
 }
 
-module.exports = DELETE;
+export default DELETE;

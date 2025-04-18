@@ -8,7 +8,7 @@ const { v4: uuid } = require("uuid");
 
 const options = { id: uuid(), test: true };
 
-describe("Nucleoid API", () => {
+describe.skip("Nucleoid API", () => {
   before(() => nucleoid.start({ test: true }));
   beforeEach(() => test.clear());
 

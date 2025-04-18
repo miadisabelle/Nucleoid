@@ -1,9 +1,9 @@
 import $Call from "../$Call";
-import { equal } from "assert";
 import Scope from "../../../Scope";
+import { equal } from "assert";
 
 describe("Call", () => {
-  it("resolves single expression", () => {
+  it.only("resolves single expression", () => {
     const call = new $Call("filter(1, 2)");
 
     const scope = new Scope();

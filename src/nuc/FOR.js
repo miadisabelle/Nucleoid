@@ -1,17 +1,32 @@
-const $BLOCK = require("../lang/$nuc/$BLOCK");
-const Instruction = require("../Instruction");
-const $LET = require("../lang/$nuc/$LET");
-const state = require("../state");
-const graph = require("../graph");
-const Evaluation = require("../lang/Evaluation");
-const _ = require("lodash");
+import * as _ from "lodash";
+import * as graph from "../graph";
+import * as state from "../state";
+
+import { Evaluation } from "../lang/Evaluation";
+import { Instruction } from "../Instruction";
+
+// Import with type assertions since we don't know the exact types
+const $BLOCK = require("../lang/$nuc/$BLOCK") as (
+  statements: any[],
+  returnLastValue?: boolean
+) => any;
+const $LET = require("../lang/$nuc/$LET") as (node: any, value: any) => any;
+
+interface Scope {
+  [key: string]: any;
+}
 
 class FOR {
+  private index: number;
+  public array!: string; 
+  public variable!: { node: any };
+  public statements!: any[]; 
+
   constructor() {
     this.index = 0;
   }
 
-  run(scope) {
+  run(scope: Scope): { next: any[] } | undefined {
     const array = state.expression(
       scope,
       new Evaluation(`state.${this.array}`)
@@ -22,7 +37,7 @@ class FOR {
     }
 
     if (this.index < array.length) {
-      let list = [];
+      let list: any[] = [];
       let key = array[this.index].id;
 
       if (key !== undefined && graph.$[key]) {
@@ -38,7 +53,9 @@ class FOR {
       list.push(new Instruction(scope, this, false, true, false, false));
       return { next: list };
     }
+
+    return undefined; 
   }
 }
 
-module.exports = FOR;
+export = FOR;

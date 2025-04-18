@@ -1,32 +1,43 @@
-const Node = require("./lang/ast/Node");
+import Node from "./lang/ast/Node";
+
+type BinaryExpression = { type: "BinaryExpression"; left: ASTNode; right: ASTNode; operator: string };
+type LogicalExpression = { type: "LogicalExpression"; left: ASTNode; right: ASTNode; operator: string };
+type UnaryExpression = { type: "UnaryExpression"; argument: ASTNode; operator: string };
+type ASTNode = BinaryExpression | LogicalExpression | UnaryExpression | { type: string; [key: string]: unknown };
 
 // TODO Organize expression structure
 class Expression extends Node {
-  map(fn) {
+  node: ASTNode;
+  constructor(node: ASTNode) {
+    super();
+    this.node = node;
+  }
+
+  map<T>(fn: (ast: ASTNode) => T): T[] {
     return mapReduce(this.node, fn);
   }
 
-  find(fn) {
+  find<T>(fn: (ast: ASTNode) => T): T | undefined {
     // TODO Optimize this with own reduce
     const [first] = mapReduce(this.node, fn);
     return first;
   }
 
-  resolve(scope) {
+  resolve(scope: object): unknown {
     return Node.convert(this.node).resolve(scope);
   }
 
-  traverse(fn) {
+  traverse<T>(fn: (ast: ASTNode) => T): T[] {
     return traverseReduce(this.node, fn);
   }
 
-  graph(scope, fn) {
+  graph<T>(scope: object, fn: (ast: ASTNode) => T): T[] {
     return graphReduce(scope, this.node, fn);
   }
 }
 
 // TODO Traverse with different types
-function traverseReduce(exp, fn, acc = []) {
+function traverseReduce<T>(exp: ASTNode, fn: (ast: ASTNode) => T, acc: T[] = []): T[] {
   if (exp.type === "BinaryExpression") {
     if (exp.left.type === "BinaryExpression") {
       acc.push("(");
@@ -68,7 +79,7 @@ function traverseReduce(exp, fn, acc = []) {
   return acc.flat(Infinity);
 }
 
-function mapReduce(exp, fn, acc = []) {
+function mapReduce<T>(exp: ASTNode, fn: (ast: ASTNode) => T, acc: T[] = []): T[] {
   if (["BinaryExpression", "LogicalExpression"].includes(exp.type)) {
     mapReduce(exp.left, fn, acc);
     mapReduce(exp.right, fn, acc);
@@ -86,7 +97,7 @@ function mapReduce(exp, fn, acc = []) {
   return acc.flat(Infinity);
 }
 
-function graphReduce(scope, exp, fn, acc = []) {
+function graphReduce<T>(scope: object, exp: ASTNode, fn: (ast: ASTNode) => T, acc: T[] = []): T[] {
   if (["BinaryExpression", "LogicalExpression"].includes(exp.type)) {
     graphReduce(scope, exp.left, fn, acc);
     graphReduce(scope, exp.right, fn, acc);
@@ -110,4 +121,4 @@ function graphReduce(scope, exp, fn, acc = []) {
   return acc.flat(Infinity);
 }
 
-module.exports = Expression;
+export default Expression;
