@@ -1,6 +1,6 @@
 import $Identifier from "../$Identifier";
-import { equal } from "assert";
 import Scope from "../../../Scope";
+import { equal } from "assert";
 
 describe("Identifier", () => {
   it("serializes single expression", () => {
@@ -63,7 +63,7 @@ describe("Identifier", () => {
   });
 
   it("serializes single expression with bracket", () => {
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.test = {};
     const identifier = new $Identifier("User[test]");
 
@@ -75,7 +75,7 @@ describe("Identifier", () => {
   });
 
   it("serializes member expression with bracket", () => {
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.test = {};
     const identifier = new $Identifier("User.address[test]");
 

@@ -1,59 +1,23 @@
-import $ from "../lang/$nuc/$";
+import { $ } from "../graph";
 import Instruction from "../Instruction";
 import NODE from "./NODE";
-import Scope from "../Scope";
-
-interface Statement {
-  type?: string;
-  id?: string;
-  block?: {
-    statements: Statement[];
-  };
-}
+import { v4 as uuid } from "uuid";
 
 class BLOCK extends NODE {
-  statements: Statement[];
+  public statements: any[];
+  public skip: boolean;
 
-  constructor(key: string) {
+  constructor(key) {
     super(key);
     this.statements = [];
+    this.skip = false;
   }
 
-  run(scope: Scope): NODE[] {
-    const newScope = new Scope(scope);
-    newScope.block = this;
+  run(scope: any): any {
     return this.statements.map(
-      (statement) =>
-        new Instruction(newScope, statement, null, null, null, null)
+      (statement, index) =>
+        new Instruction(scope, statement, null, null, null, null)
     );
-  }
-
-  stage(instruction: Instruction): void {
-    if (
-      instruction.scope.block.type === undefined &&
-      instruction.statement.type === "CLASS"
-    ) {
-      throw new SyntaxError(
-        "Cannot define class declaration in non-class block"
-      );
-    }
-
-    if (
-      instruction.run &&
-      !(instruction.statement instanceof $) &&
-      instruction.statement.type !== "CLASS"
-    ) {
-      const statement = instruction.statement as Statement;
-      const block = statement.block;
-
-      if (block && statement.id) {
-        block.statements = block.statements.filter(
-          (s) => s.id !== statement.id
-        );
-      }
-
-      this.statements.push(instruction.statement);
-    }
   }
 }
 

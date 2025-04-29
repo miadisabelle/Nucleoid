@@ -6,7 +6,7 @@ describe("Call", () => {
   it.only("resolves single expression", () => {
     const call = new $Call("filter(1, 2)");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.filter = {};
     equal(call.first, "filter");
     equal(call.last, "filter");
@@ -19,7 +19,7 @@ describe("Call", () => {
   it("resolves member expression", () => {
     const call = new $Call("user.accounts.filter(1, 2)");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.user = {};
     equal(call.first, "user");
     equal(call.last, "filter");
@@ -32,7 +32,7 @@ describe("Call", () => {
   it("resolves chained expression", () => {
     const call = new $Call("user.accounts.filter(1, 2).type.add(1, 2)");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.user = {};
     equal(call.first, "user");
     equal(call.last, "filter");
@@ -50,7 +50,7 @@ describe("Call", () => {
       "user.accounts.filter((account) => account.type === type)"
     );
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.type = {};
     equal(call.first, "user");
     equal(call.last, "filter");
@@ -68,7 +68,7 @@ describe("Call", () => {
       "user.accounts.filter((account) => account.type === type).type.find((type) => type.level > level);"
     );
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.type = "TEST";
     scope.graph.level = {};
     equal(call.first, "user");
@@ -88,7 +88,7 @@ describe("Call", () => {
   it("resolves member expression with another call", () => {
     const call = new $Call("user.filter('ABC' + name.charAt(first));");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.first = {};
     equal(call.first, "user");
     equal(call.last, "filter");
@@ -104,7 +104,7 @@ describe("Call", () => {
   it("resolves literal expression", () => {
     const call = new $Call("/[A-Z]/.test(user);");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.user = {};
     equal(call.first, "/[A-Z]/");
     equal(call.last, "test");

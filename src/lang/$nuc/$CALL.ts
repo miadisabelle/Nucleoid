@@ -1,11 +1,13 @@
-import $ from "./$";
-import graph from "../../graph";
-import $BLOCK from "./$BLOCK";
-import $LET from "./$LET";
-import _ from "lodash";
-import $Identifier from "../ast/Identifier";
 import { Expression, Literal } from "acorn";
+
+import $ from "./$";
+import $BLOCK from "./$BLOCK";
 import { $FUNCTION } from "./$FUNCTION";
+import $Identifier from "../ast/Identifier";
+import $LET from "./$LET";
+import NODE from "../../nuc/NODE";
+import _ from "lodash";
+import { retrieve } from "../../graph";
 
 function build(func: Expression, args: Expression[]) {
   const call = new $CALL();
@@ -18,7 +20,9 @@ class $CALL extends $ {
   func!: Expression | $FUNCTION;
   args!: Expression[];
 
-  run() {
+  result: any;
+
+  run(scope: any): $ | NODE | NODE[] | null {
     let block, args;
 
     if (this.func.constructor.name === "$FUNCTION") {
@@ -27,7 +31,7 @@ class $CALL extends $ {
       args = func.args;
     } else {
       const name = new $Identifier(this.func);
-      const func = graph.retrieve(name);
+      const func = retrieve(name);
       block = func.block;
       args = func.arguments;
     }
@@ -51,7 +55,9 @@ class $CALL extends $ {
         );
       }
 
-      return $BLOCK(statements);
+      const blockInstance = $BLOCK(statements);
+      this.result = blockInstance.run(scope);
+      return this;
     } else {
       throw TypeError(`This is not a function`);
     }
@@ -60,3 +66,4 @@ class $CALL extends $ {
 
 export default build;
 export { $CALL };
+

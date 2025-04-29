@@ -1,14 +1,14 @@
+import $ from "./$";
 import BLOCK from "../../nuc/BLOCK";
 import BLOCK$CLASS from "../../nuc/BLOCK$CLASS";
-import $ from "./$";
 import Instruction from "../../Instruction";
-import Scope from "../../Scope";
-import { v4 as uuid } from "uuid";
-import _ from "lodash";
 import LET from "../../nuc/LET";
-import REFERENCE from "../../nuc/REFERENCE";
 import OBJECT$CLASS from "../../nuc/OBJECT$CLASS";
 import PROPERTY$CLASS from "../../nuc/PROPERTY$CLASS";
+import REFERENCE from "../../nuc/REFERENCE";
+import Scope from "../../Scope";
+import _ from "lodash";
+import { v4 as uuid } from "uuid";
 
 function build(statements, skip: boolean = false) {
   const statement = new $BLOCK();
@@ -22,7 +22,7 @@ class $BLOCK extends $ {
   skp!: boolean;
 
   run(scope) {
-    const test = new Scope(scope);
+    const test = new Scope(scope, {});
     test.object = scope.object;
 
     let $class;
@@ -52,8 +52,8 @@ class $BLOCK extends $ {
           statement instanceof Instruction ? statement.statement : statement
         );
 
-      if (result instanceof LET && !(result.value instanceof REFERENCE)) {
-        result.before(test);
+      if (!(result.value instanceof REFERENCE)) {
+        result.before();
         result.run(test);
         statement.beforeGraph(test);
         statement.graph(test);
@@ -79,18 +79,17 @@ class $BLOCK extends $ {
       statement.class = $class;
       statement.statements = this.stms;
       return [
-        new Instruction(scope, statement, true, true, false, false),
-        new Instruction(scope, statement, false, false, true, true),
-      ];
+        new Instruction(scope, statement, null, null, null, null),
+        new Instruction(scope, statement, null, null, null, null),
+      ] as any;
     } else {
       const statement = new BLOCK(uuid());
       statement.statements = this.stms;
       statement.skip = this.skp;
-
       return [
-        new Instruction(scope, statement, true, true, false, false),
-        new Instruction(scope, statement, false, false, true, true),
-      ];
+        new Instruction(scope, statement, null, null, null, null),
+        new Instruction(scope, statement, null, null, null, null),
+      ] as any;
     }
   }
 }

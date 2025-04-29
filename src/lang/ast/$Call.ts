@@ -3,52 +3,63 @@ import $Identifier from "./$Identifier";
 import $Node from "./$Node";
 import Expression from "../../Expression";
 import FUNCTION from "../../nuc/FUNCTION";
+import { Node } from "acorn";
 import _ from "lodash";
-import graph from "../../graph";
+import { process } from "../../stack";
+import { retrieve } from "../../graph";
 import serialize from "../../lib/serialize";
-import stack from "../../stack";
 
 class $Call extends $Node {
-  get first() {
+  get first(): $Identifier | null {
     const callee = rootCallee(this.node);
-    const identifier = new $Identifier(callee);
+    if (!callee) return null;
+
+    const identifier = new $Identifier(callee as unknown as Node);
     return identifier.first;
   }
 
-  get object() {
+  get object(): $Identifier | null {
     const callee = rootCallee(this.node);
-    const identifier = new $Identifier(callee);
+    if (!callee) return null;
+
+    const identifier = new $Identifier(callee as unknown as Node);
     return identifier.object;
   }
 
-  get last() {
+  get last(): $Identifier | null {
     const root = rootCallee(this.node);
-    const identifier = new $Identifier(root);
+    if (!root) return null;
+
+    const identifier = new $Identifier(root as unknown as Node);
     return identifier.last;
   }
 
-  get function() {
+  get function(): $Identifier {
     const root = rootCallee(this.node);
-    return new $Identifier(root);
+    if (!root) {
+      throw new Error("Function callee is null or undefined");
+    }
+    return new $Identifier(root as unknown as Node);
   }
 
-  resolve(scope) {
+  resolve(scope: unknown): Node {
     if (scope) {
       const clone = _.cloneDeep(this);
       const first = clone.first;
 
-      if (graph.retrieve(first) instanceof FUNCTION) {
-        const { value } = stack.process(
-          [$CALL(this.node.callee, this.node.arguments)],
+      if (first && retrieve(first) instanceof FUNCTION) {
+        const { value } = process(
+          [$CALL((this.node as any).callee, (this.node as any).arguments)],
           scope
         );
         const json = serialize(value, "state");
-        const expression = new Expression(`(${json})`);
-        return expression.resolve(scope);
+        const astNode = JSON.parse(json);
+        const expression = new Expression(astNode);
+        return expression.resolve(scope) as Node;
       } else {
-        if (first.type !== "Literal") {
+        if (first && first.type !== "Literal") {
           const resolved = first.resolve(scope);
-          const rootNode = root(clone.node);
+          const rootNode = findRoot(clone.node);
 
           if (resolved) {
             if (rootNode.object) {
@@ -61,35 +72,75 @@ class $Call extends $Node {
 
         resolveArguments(scope, clone.node);
 
-        return clone.node;
+        return clone.node as Node;
       }
     } else {
-      return this.node;
+      return this.node as Node;
     }
   }
 
-  graph(scope) {
-    return [
-      this.first.graph(scope),
-      traverseCallee(this.node, (callee) =>
-        callee.arguments.map((arg) => $Node.convert(arg).graph(scope))
-      ),
-    ];
-  }
+  graph(scope: unknown): $Node[] {
+    const result: $Node[] = [];
 
-  walk() {
     if (this.first) {
-      return [
-        this.first.walk(),
-        traverseCallee(this.node, (callee) =>
-          callee.arguments.map((arg) => $Node.convert(arg).walk())
-        ),
-      ];
+      const firstGraph = this.first.graph(scope);
+      result.push(...firstGraph);
     }
+
+    const argGraphs = traverseCallee(this.node, (callee) => {
+      if (!callee.arguments) return [];
+
+      return callee.arguments.flatMap((arg: Node | string) => {
+        const node = $Node.convert(arg);
+        return node ? node.graph(scope) : [];
+      });
+    });
+
+    for (const graphs of argGraphs) {
+      if (Array.isArray(graphs)) {
+        for (const item of graphs) {
+          if (item instanceof $Node) {
+            result.push(item);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  walk(): $Node[] {
+    const result: $Node[] = [];
+
+    if (this.first) {
+      const firstWalk = this.first.walk();
+      result.push(...firstWalk);
+    }
+
+    const argWalks = traverseCallee(this.node, (callee) => {
+      if (!callee.arguments) return [];
+
+      return callee.arguments.flatMap((arg: Node | string) => {
+        const node = $Node.convert(arg);
+        return node ? node.walk() : [];
+      });
+    });
+
+    for (const walks of argWalks) {
+      if (Array.isArray(walks)) {
+        for (const item of walks) {
+          if (item instanceof $Node) {
+            result.push(item);
+          }
+        }
+      }
+    }
+
+    return result;
   }
 }
 
-function root(node) {
+function findRoot(node: Record<string, any>): Record<string, any> {
   let current = node;
 
   while (
@@ -103,9 +154,11 @@ function root(node) {
   return current;
 }
 
-function rootCallee(node) {
+function rootCallee(node: Record<string, any>): Record<string, any> | null {
   let current = node;
   let callee = node.callee;
+
+  if (!callee) return null;
 
   while (
     ["MemberExpression", "CallExpression"].includes(
@@ -122,9 +175,12 @@ function rootCallee(node) {
   return callee;
 }
 
-function traverseCallee(node, func) {
+function traverseCallee<T = any>(
+  node: Record<string, any>,
+  func: (node: Record<string, any>) => T[]
+): T[][] {
   let current = node;
-  const acc = [];
+  const acc: T[][] = [];
 
   while (
     ["MemberExpression", "CallExpression"].includes(
@@ -141,7 +197,7 @@ function traverseCallee(node, func) {
   return acc;
 }
 
-function resolveArguments(scope, node) {
+function resolveArguments(scope: unknown, node: Record<string, any>): void {
   let current = node;
 
   while (
@@ -149,14 +205,18 @@ function resolveArguments(scope, node) {
       current?.type || current.object?.type
     )
   ) {
-    if (current.callee) {
-      current.arguments = current.arguments.map((arg) =>
-        Node.convert(arg).resolve(scope)
-      );
+    if (current.callee && current.arguments) {
+      current.arguments = current.arguments.map((arg: Node | string) => {
+        const node = $Node.convert(arg);
+        return node ? node.resolve(scope) : arg;
+      });
     }
 
     current = current.callee || current.object;
   }
 }
 
+$Node.register("CallExpression", $Call);
+
 export default $Call;
+

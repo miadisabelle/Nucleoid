@@ -1,8 +1,9 @@
-import graph from "../../graph";
-import { root, append } from "../estree/estree";
+import { Node as AcornNode, Expression, MemberExpression } from "acorn";
+import { append, root } from "../estree/estree";
+
 import $Node from "./$Node";
 import _ from "lodash";
-import { Expression, MemberExpression } from "acorn";
+import { retrieve } from "../../graph";
 
 class $Identifier extends $Node {
   static get types() {
@@ -108,7 +109,7 @@ class $Identifier extends $Node {
         }
       }
 
-      if (graph.retrieve(first)) {
+      if (retrieve(first)) {
         const state = {
           type: "Identifier",
           name: "state",
@@ -133,7 +134,7 @@ class $Identifier extends $Node {
       return [];
     }
 
-    const first = graph.retrieve(this.first);
+    const first = retrieve(this.first);
 
     if (first) {
       return [removeBuiltins(this)];
@@ -148,14 +149,18 @@ class $Identifier extends $Node {
 
   [Symbol.iterator]() {
     const list: { left: $Identifier; right: $Identifier }[] = [];
-
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let left: $Identifier = this;
-    let right;
+    let right: $Identifier | undefined;
 
     while (left.object) {
       // list.push(left.object);
-      right = new $Identifier(append(left?.last?.node, right?.node));
+      const appended = append(
+        left.last!.node as any,
+        right?.node as any
+      ) as unknown as AcornNode | string | undefined;
+
+      right = new $Identifier(appended);
       left = left.object;
       list.push({ left, right });
     }
@@ -186,3 +191,4 @@ function removeBuiltins(identifier) {
 }
 
 export default $Identifier;
+

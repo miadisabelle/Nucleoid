@@ -6,7 +6,7 @@ describe("Function", () => {
   it("resolves identifiers", () => {
     const func = new $Function("(user) => user.age === age");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.age = {};
     equal(func.first, null);
     equal(func.object, null);
@@ -20,7 +20,7 @@ describe("Function", () => {
       "(user) => { user.age = age ; return user.age }"
     );
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.age = {};
     equal(func.first, null);
     equal(func.object, null);
@@ -35,7 +35,7 @@ describe("Function", () => {
   it("resolves identifiers with if statement", () => {
     const func = new $Function("(user) => { if ( age ) { return age } }");
 
-    const scope = new Scope();
+    const scope = new Scope(null, {});
     scope.graph.age = {};
     equal(func.first, null);
     equal(func.object, null);

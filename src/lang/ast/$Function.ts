@@ -1,7 +1,12 @@
+import $Identifier from "./$Identifier";
 import $Node from "./$Node";
 import _ from "lodash";
-import $Identifier from "./$Identifier";
-import { Function } from "acorn";
+
+interface FunctionNode {
+  type: string;
+  params: any[];
+  body: any;
+}
 
 class $Function extends $Node {
   resolve(scope) {
@@ -17,7 +22,7 @@ class $Function extends $Node {
   }
 
   graph(scope) {
-    const node = this.node as Function;
+    const node = this.node as unknown as FunctionNode;
     scope.callback = node.params.map((param) => new $Identifier(param));
     const list = graphNode(scope, node.body);
     scope.callback = [];
@@ -139,3 +144,4 @@ function graphIdentifier(scope, node, acc: $Identifier[] = []): $Identifier[] {
 }
 
 export default $Function;
+

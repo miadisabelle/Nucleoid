@@ -1,104 +1,99 @@
-//REVISIT
-type SerializableValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | Date
-  | RegExp
-  | Map<SerializableValue, SerializableValue>
-  | Set<SerializableValue>
-  | SerializableObject
-  | Array<SerializableValue>;
-
-interface SerializableObject {
-  id?: string;
-  [key: string]: SerializableValue;
-}
-
-interface AccumulatorObject {
-  [id: string]: SerializableObject;
-}
-
+/**
+ * Serializes JavaScript values to a string representation.
+ * Handles circular references by using a reference system.
+ *
+ * @param value - The value to serialize
+ * @param source - Source identifier for reference tracking
+ * @param refs - Internal parameter used for tracking object references
+ * @returns A string representation of the value
+ */
 function serialize(
-  input: SerializableValue,
+  value: unknown,
   source: string,
-  acc: AccumulatorObject = {}
+  refs: Map<object, string> = new Map()
 ): string {
-  const state = require("../state").$;
-  const graph = require("../graph").$;
-  let result: string;
-
-  switch (true) {
-    case input instanceof Array:
-      result = `[${(input as Array<SerializableValue>)
-        .map((i) => serialize(i, source, acc))
-        .join(",")}]`;
-      break;
-    case input instanceof Map:
-      result = `new Map(${serialize(
-        [...(input as Map<SerializableValue, SerializableValue>)],
-        source,
-        acc
-      )})`;
-      break;
-    case input instanceof Set:
-      result = `new Set(${serialize(
-        [...(input as Set<SerializableValue>)],
-        source,
-        acc
-      )})`;
-      break;
-    case input instanceof Date:
-      result = `new Date(${(input as Date).getTime()})`;
-      break;
-    case input instanceof String:
-    case input instanceof Number:
-    case input instanceof Boolean:
-      result = JSON.stringify(input);
-      break;
-    case input instanceof Function:
-    case input instanceof RegExp:
-      result = (input as RegExp)
-        .toString()
-        .replace(/\n/g, " ")
-        .replace(/ +/g, " ");
-      break;
-    case input instanceof Object:
-      const obj = input as SerializableObject;
-      if (
-        source === "state" &&
-        obj.id !== undefined &&
-        state[obj.id] !== undefined
-      ) {
-        result = `state.${obj.id}`;
-        break;
-      } else if (
-        source === "graph" &&
-        obj.id !== undefined &&
-        graph[obj.id] !== undefined
-      ) {
-        result = `graph['${obj.id}']`;
-        break;
-      } else if (obj.id !== undefined && acc[obj.id] !== undefined) {
-        result = `{$ref:{id:'${obj.id}',source:'${source}'}}`;
-        break;
-      } else {
-        if (obj.id !== undefined) {
-          acc[obj.id] = obj;
-        }
-      }
-
-      result = `{${Object.entries(obj)
-        .map(([key, value]) => `${key}:${serialize(value, source, acc)}`)
-        .join(",")}}`;
-      break;
-    default:
-      result = JSON.stringify(input);
+  // Handle null
+  if (value === null) {
+    return "null";
   }
 
-  return result;
+  // Handle undefined
+  if (value === undefined) {
+    return "undefined";
+  }
+
+  const valueType = typeof value;
+
+  // Handle primitives
+  if (valueType === "string") {
+    return JSON.stringify(value);
+  }
+
+  if (valueType === "number" || valueType === "boolean") {
+    return String(value);
+  }
+
+  if (valueType === "function") {
+    return value.toString();
+  }
+
+  // Handle objects
+  if (valueType === "object") {
+    // Check for circular references
+    if (refs.has(value as object)) {
+      return `{$ref:{id:'${refs.get(value as object)}',source:'${source}'}}`;
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return JSON.stringify(value);
+    }
+
+    // Handle Date
+    if (value instanceof Date) {
+      return `new Date(${value.getTime()})`;
+    }
+
+    // Handle RegExp
+    if (value instanceof RegExp) {
+      return value.toString();
+    }
+
+    // Handle Map
+    if (value instanceof Map) {
+      const entries = Array.from(value.entries()).map(([k, v]) => [
+        JSON.stringify(k),
+        serialize(v, source, refs),
+      ]);
+      return `new Map([${entries.map(([k, v]) => `[${k},${v}]`).join(",")}])`;
+    }
+
+    // Handle Set
+    if (value instanceof Set) {
+      const values = Array.from(value).map((v) => serialize(v, source, refs));
+      return `new Set([${values.join(",")}])`;
+    }
+
+    // Handle regular objects
+    if (value.constructor === Object) {
+      // Store the reference ID for this object
+      const obj = value as Record<string, unknown>;
+      if (obj.hasOwnProperty("id")) {
+        refs.set(value as object, String(obj.id));
+      }
+
+      const entries = Object.entries(value).map(
+        ([k, v]) => `${k}:${serialize(v, source, refs)}`
+      );
+      return `{${entries.join(",")}}`;
+    }
+
+    // Handle other object types
+    return `[object ${value.constructor.name}]`;
+  }
+
+  // Handle other types
+  return String(value);
 }
 
 export default serialize;

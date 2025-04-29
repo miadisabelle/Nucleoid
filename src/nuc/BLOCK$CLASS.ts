@@ -1,3 +1,5 @@
+// src/nuc/BLOCK$CLASS.ts
+
 import BLOCK$INSTANCE from "./BLOCK$INSTANCE";
 import Instruction from "../Instruction";
 import NODE from "./NODE";
@@ -5,19 +7,11 @@ import Scope from "../Scope";
 import { v4 as uuid } from "uuid";
 
 class BLOCK$CLASS extends NODE {
-  statements: Array<{
-    id: string;
-    class?: Record<string, unknown>;
-    instance?: Record<string, unknown>;
-    statements?: Array<unknown>;
-    declaration?: BLOCK$CLASS;
-  }>;
-
+  statements: any[];
   class!: {
     instances: Record<string, Record<string, unknown>>;
     declarations: Record<string, BLOCK$CLASS>;
   };
-
   id!: string;
   type: string;
 
@@ -27,53 +21,59 @@ class BLOCK$CLASS extends NODE {
     this.type = "CLASS";
   }
 
-  run(scope: Scope): NODE | NODE[] | null {
-    let instances: Record<string, unknown>[];
-    const statements: Instruction[] = [];
+  run(scope: Scope): NODE[] | null {
+    const instances: Record<string, unknown>[] = scope.$instance
+      ? [scope.$instance as Record<string, unknown>]
+      : Object.values(this.class.instances);
 
-    const instance = scope.$instance as Record<string, unknown> | undefined;
-
-    if (instance) {
-      instances = [instance];
-    } else {
-      instances = Object.values(this.class.instances);
-    }
+    const instructions: NODE[] = [];
 
     for (const instance of instances) {
-      const statement = new BLOCK$INSTANCE(uuid()) as {
+      const statement = new BLOCK$INSTANCE(uuid()) as unknown as {
         id: string;
         class?: {
           instances: Record<string, Record<string, unknown>>;
           declarations: Record<string, BLOCK$CLASS>;
         };
-        instance?: typeof instance;
-        statements?: Array<{
-          id: string;
-          class?: Record<string, unknown>;
-          instance?: Record<string, unknown>;
-          statements?: Array<unknown>;
-          declaration?: BLOCK$CLASS;
-        }>;
+        instance?: Record<string, unknown>;
+        statements?: any[];
         declaration?: BLOCK$CLASS;
       };
 
+      statement.id = uuid();
       statement.class = this.class;
       statement.instance = instance;
       statement.statements = this.statements;
       statement.declaration = this;
 
-      const instanceScope = new Scope(scope.block ? scope : null);
+      const parentScope = (scope as any).block ? scope : null;
+      const instanceScope = new Scope(parentScope, statement);
       instanceScope.$instance = this;
 
-      statements.push(
-        new Instruction(instanceScope, statement, true, true, false, false)
+      instructions.push(
+        new Instruction(
+          instanceScope,
+          statement,
+          () => {},
+          () => {},
+          null,
+          null
+        ) as unknown as NODE
       );
-      statements.push(
-        new Instruction(instanceScope, statement, false, false, true, true)
+
+      instructions.push(
+        new Instruction(
+          instanceScope,
+          statement,
+          () => {},
+          () => {},
+          null,
+          null
+        ) as unknown as NODE
       );
     }
 
-    return statements.length > 0 ? statements : null;
+    return instructions.length > 0 ? instructions : null;
   }
 
   graph(): NODE[] | null {
@@ -83,3 +83,4 @@ class BLOCK$CLASS extends NODE {
 }
 
 export default BLOCK$CLASS;
+

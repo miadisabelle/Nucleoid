@@ -21,6 +21,4 @@ function clear() {
   $["classes"] = { name: "classes" };
 }
 
-module.exports.$ = $;
-module.exports.retrieve = retrieve;
-module.exports.clear = clear;
+export { $, retrieve, clear };

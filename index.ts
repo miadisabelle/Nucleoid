@@ -1,9 +1,9 @@
-import nucleoid from "./src/nucleoid";
-import express from "./src/express";
 import config from "./src/config";
-import test from "./src/lib/test";
-import openapi from "./src/lib/openapi";
 import datastore from "./src/datastore";
+import express from "./src/express";
+import nucleoid from "./src/nucleoid";
+import * as openapi from "./src/lib/openapi";
+import test from "./src/lib/test";
 
 const { start, run } = nucleoid;
 export default {

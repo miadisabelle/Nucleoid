@@ -1,59 +1,100 @@
-const $ = {
+import { register } from "./transaction";
+import serialize from "./lib/serialize";
+
+// Scope type based on src/Scope.ts
+interface Scope {
+  prior: Scope | null;
+  block: object;
+  root: Scope;
+  local: Record<string, unknown>;
+  instance: object | null;
+  graph: Record<string, unknown>;
+  callback: Array<() => void>;
+  instances: Record<string, unknown>;
+  object?: { name: string };
+  [key: string]: unknown;
+}
+
+// State shape
+interface State {
+  [key: string]: unknown;
+  classes: unknown[];
+}
+
+const $: State = {
   classes: [],
 };
-const state = $;
 
-const _transaction = require("./transaction");
-const { $: $graph } = require("./graph");
-const { event } = require("./event");
-const _ = require("lodash");
-const { v4: uuid } = require("uuid");
-const REFERENCE = require("./nuc/REFERENCE");
-const serialize = require("./lib/serialize");
+// Evaluation type: Accepts string or { value: string }
+type Evaluation = string | { value: string };
 
-global.require = require;
+type SerializableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Date
+  | RegExp
+  | Map<SerializableValue, SerializableValue>
+  | Set<SerializableValue>
+  | { id?: string; [key: string]: SerializableValue }
+  | Array<SerializableValue>;
 
-function assign(scope, variable, evaluation, json = true) {
-  let value;
-
+function assign(
+  scope: Scope,
+  variable: string,
+  evaluation: Evaluation,
+  json: boolean = true
+): SerializableValue {
+  let value: SerializableValue;
   if (json) {
-    value = serialize(eval(`(${evaluation})`), "state");
+    const evalValue = typeof evaluation === "string" ? evaluation : evaluation.value;
+    value = serialize(eval(`(${evalValue})`), "state");
   } else {
-    value = evaluation.toString();
+    value = typeof evaluation === "string" ? evaluation : evaluation.value;
   }
-
-  return _transaction.register(`state.${variable}`, value);
+  return register(`state.${variable}`, value) as SerializableValue;
 }
 
-function call(scope, fn, args = []) {
+function call(
+  scope: Scope,
+  fn: string,
+  args: SerializableValue[] = []
+): SerializableValue {
   const exec = `state.${fn}(${args.join(",")})`;
-  return eval(exec);
+  return eval(exec) as SerializableValue;
 }
 
-function expression(scope, evaluation) {
-  return eval(`(${evaluation.value})`);
+function expression(
+  scope: Scope,
+  evaluation: { value: string }
+): SerializableValue {
+  return eval(`(${evaluation.value})`) as SerializableValue;
 }
 
-function del(scope, variable) {
+function del(scope: Scope, variable: string): boolean {
   return eval(`delete state.${variable}`);
 }
 
-const throwException = (scope, exception) => eval(`throw ${exception}`);
+function throwException(scope: Scope, exception: string): never {
+  // This will throw and never return
+  throw eval(`throw ${exception}`);
+}
 
-function clear() {
+function clear(): void {
   for (const property in $) {
     delete $[property];
   }
-
   $["classes"] = [];
 }
 
-module.exports = {
+export {
   $,
   assign,
   call,
   expression,
   clear,
-  delete: del,
-  throw: throwException,
+  del as delete,
+  throwException as throw,
 };

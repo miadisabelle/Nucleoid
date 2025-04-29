@@ -1,11 +1,38 @@
+import { Literal, Node } from "acorn";
+
 import ESTree from "../estree/generator";
 import { parse } from "../estree/parser";
-import $Identifier from "./$Identifier";
-import { Node, Literal } from "acorn";
+
+interface NodeConverter {
+  convert(node: Node | string): $Node;
+}
 
 class $Node {
   iof: string;
   node: Node;
+  static registry: Record<string, new (node?: Node | string) => $Node> = {};
+
+  static convert(node: Node | string): $Node {
+    if (!node) return new $Node();
+
+    const nodeObj: Node =
+      typeof node === "string" ? parse(node as string, false) : (node as Node);
+    const type = nodeObj.type;
+
+    const NodeClass = this.registry[type];
+    if (NodeClass) {
+      return new NodeClass(nodeObj);
+    }
+
+    return new $Node(nodeObj);
+  }
+
+  static register(
+    type: string,
+    NodeClass: new (node?: Node | string) => $Node
+  ): void {
+    this.registry[type] = NodeClass;
+  }
 
   constructor(node?: Node | string) {
     this.iof = this.constructor.name;
@@ -27,30 +54,30 @@ class $Node {
     return this.node.type;
   }
 
-  get first(): $Identifier | null {
+  get first(): $Node | null {
     return null;
   }
 
-  get object(): $Identifier | null {
+  get object(): $Node | null {
     return null;
   }
 
-  get last(): $Identifier | null {
+  get last(): $Node | null {
     return null;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  resolve(scope): Node {
+  resolve(scope: unknown): Node {
     return this.node;
   }
 
-  generate(scope) {
+  generate(scope: unknown): string {
     const resolved = this.resolve(scope);
     return ESTree.generate(resolved);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  graph(scope): $Identifier[] {
+  graph(scope: unknown): $Node[] {
     return [];
   }
 
@@ -58,9 +85,10 @@ class $Node {
     return [];
   }
 
-  toString(scope) {
+  toString(scope: unknown): string {
     return this.generate(scope);
   }
 }
 
 export default $Node;
+

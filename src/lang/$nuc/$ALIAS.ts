@@ -1,7 +1,8 @@
-import $ from "./$";
-import ALIAS from "../../nuc/ALIAS";
 import $EXP, { $EXPRESSION } from "./$EXPRESSION";
+
+import $ from "./$";
 import $Identifier from "../ast/$Identifier";
+import ALIAS from "../../nuc/ALIAS";
 import { Identifier } from "acorn";
 
 function build(alias: Identifier, name: string, value: $EXPRESSION) {
@@ -15,16 +16,16 @@ function build(alias: Identifier, name: string, value: $EXPRESSION) {
 class $ALIAS extends $ {
   als!: Identifier;
   nme!: string;
-  val!: $EXPRESSION;
+  val!: any;
 
   before(scope) {
     const expression = $EXP(this.val);
     this.val = expression.run(scope);
   }
 
-  run() {
+  run(scope: any): any {
     const name = new $Identifier(this.nme);
-    const statement = new ALIAS(name);
+    const statement = new ALIAS();
     statement.alias = new $Identifier(this.als);
     statement.name = name;
     statement.value = this.val;
