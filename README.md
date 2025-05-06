@@ -83,7 +83,7 @@ In Nucleoid's paradigm, there is no segregation between logic and data; instead,
       Welcome! I’ve been expecting you—"Skynet was gone. And now one road has become many." 🌐
       <br/>
       <br/>
-      The future is building up! Neuro-Symbolic AI is now an emerging field within AI communities and marks a crucial milestone on the journey to AGI. Unfortunately, existing symbolic AI and knowledge graphs lack advancement in today's AI landscape. Nucleoid is revolutionizing knowledge graphs with declarative, logic-based, contextual runtime, which can be integrated with ANNs to lay a robust foundation for the next leap forward. We use a Node.js-based runtime, simply because JavaScript is the language of the internet so that every piece of code is inherently dynamic, making it an ideal candidate. Sadly, Python's interpreter structure makes its dynamic eval function extremely slow, but in good side, the future looks bright as it will harness the strengths of both languages, much like the fusion of neuro and symbolic AI leverages their respective strengths!
+      The future is building up! Neuro-Symbolic AI is now an emerging field within AI communities and marks a crucial milestone on the journey to AGI. Unfortunately, existing symbolic AI and knowledge graphs lack advancement in today's AI landscape. Nucleoid is revolutionizing knowledge graphs with declarative, logic-based, contextual runtime, which can be integrated with ANNs to lay a robust foundation for the next leap forward!
       <br/>
       <br/>
       <p align="right">
@@ -220,7 +220,7 @@ Learn more at [nucleoid.com/docs/get-started](https://nucleoid.com/docs/get-star
 
 ### Under the hood: Declarative (Logic) Runtime Environment
 
-Nucleoid is an implementation of symbolic AI for declarative (logic) programming at the runtime. As mentioned, the declarative runtime environment manages JavaScript state and stores each transaction in the built-in data store by declaratively rerendering JavaScript statements and building the knowledge graph (base) as well as an execution plan.
+Nucleoid is an implementation of symbolic AI for declarative (logic) programming at the runtime. As mentioned, the declarative runtime environment manages object state and stores each transaction in the built-in data store by declaratively rerendering TypeScript statements and building the knowledge graph (base) as well as an execution plan.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4b199f99-336b-4da5-8358-2bbf7ac41c87" width="600" alt="Nucleoid's Taxonomy"/>
