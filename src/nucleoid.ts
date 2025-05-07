@@ -1,7 +1,10 @@
-import chalk from "chalk";
+import * as context from "./context";
+
 import { Config, Data, Options } from "./types";
-import runtime from "./runtime";
+
+import chalk from "chalk";
 import { init } from "./config";
+import runtime from "./runtime";
 
 function start(config: Config = {}) {
   init(config);
@@ -17,4 +20,13 @@ function run(statement: string, options: Options = {}): Data | any {
   return runtime.process(statement, options);
 }
 
-export default { start, run };
+function register(fn) {
+  context.load([
+    {
+      definition: fn.toString(),
+      options: { declarative: true },
+    },
+  ]);
+}
+
+export default { start, run, register };

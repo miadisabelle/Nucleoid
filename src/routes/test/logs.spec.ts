@@ -6,7 +6,7 @@ import terminal from "../terminal";
 import test from "../../lib/test";
 
 describe("Logs service", () => {
-  before(() => nucleoid.start({ test: true }));
+  beforeEach(() => nucleoid.start({ test: true }));
   beforeEach(() => test.clear());
 
   it("retrieves logs", async () => {
