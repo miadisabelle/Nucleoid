@@ -1,9 +1,10 @@
-const test = require("../../lib/test");
-const terminal = require("../terminal");
-const request = require("supertest");
-const { equal, deepEqual } = require("assert");
-const data = require("./data.json");
-const openapi = require("../../lib/openapi");
+import { deepEqual, equal } from "assert";
+
+import data from "./data.json";
+import openapi from "../../lib/openapi";
+import request from "supertest";
+import terminal from "../terminal";
+import test from "../../lib/test";
 
 describe("OpenAPI service", () => {
   beforeEach(() => test.clear());

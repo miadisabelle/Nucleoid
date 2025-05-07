@@ -1,8 +1,9 @@
-const test = require("../../lib/test");
-const terminal = require("../terminal");
-const request = require("supertest");
-const { equal, notEqual } = require("assert");
-const nucleoid = require("../../../index");
+import { equal, notEqual } from "assert";
+
+import nucleoid from "../../../index";
+import request from "supertest";
+import terminal from "../terminal";
+import test from "../../lib/test";
 
 describe("Logs service", () => {
   before(() => nucleoid.start({ test: true }));

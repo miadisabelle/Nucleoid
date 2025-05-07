@@ -1,7 +1,8 @@
-const test = require("../../lib/test");
-const terminal = require("../terminal");
-const request = require("supertest");
-const { equal, notEqual } = require("assert");
+import { equal, notEqual } from "assert";
+
+import request from "supertest";
+import terminal from "../terminal";
+import test from "../../lib/test";
 
 describe("Terminal", () => {
   beforeEach(() => test.clear());
