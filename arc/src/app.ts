@@ -1,4 +1,15 @@
-console.info = (message) => {
+import Matrix from "./lib/Matrix";
+import analyzer from "./lib/analyzer";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import debug from "./debug";
+import fs from "fs";
+import nucleoid from "./lib/nucleoid";
+import trainData from "./data/training/3aa6fb7a.json";
+import { v4 as uuid } from "uuid";
+import visualizer from "./lib/visualizer";
+
+// Console overrides
+console.info = (message: string | undefined | null) => {
   let string = message;
 
   if (typeof message !== "string") {
@@ -16,7 +27,7 @@ console.info = (message) => {
   process.stdout.write(`\x1b[34m${string}\x1b[0m\n`);
 };
 
-console.debug = (message) => {
+console.debug = (message: string | undefined | null) => {
   let string = message;
 
   if (typeof message !== "string") {
@@ -36,42 +47,39 @@ console.debug = (message) => {
 console.log("🌿 \x1b[32mNucleoid\x1b[0m system is started");
 console.log("\x1b[34m🌎 Inspired by Nature\x1b[0m\n");
 
-require.extensions[".md"] = (module, filename) => {
-  const fs = require("fs");
+// @ts-ignore
+require.extensions[".md"] = (module: any, filename: string) => {
   module.exports = fs.readFileSync(filename, "utf8").trim();
 };
 
 // ---
 
-const analyzer = require("./lib/analyzer");
-const visualizer = require("./lib/visualizer");
-const nucleoid = require("./lib/nucleoid");
-const Matrix = require("./lib/Matrix");
-const { v4: uuid } = require("uuid");
-const debug = require("./debug"); // eslint-disable-line no-unused-vars
+type TrainItem = { input: number[][]; output: number[][] };
+type TestItem = { input: number[][]; output: number[][] };
 
 const {
   train,
   test: [{ input: test_input_matrix, output: test_output_matrix }],
-} = require("./data/training/3aa6fb7a.json"); // 0ca9ddb6.json
+}: {
+  train: TrainItem[];
+  test: TestItem[];
+} = trainData as { train: TrainItem[]; test: TestItem[] };
 
 const train_dataset = {
   dataset: train.map(({ input, output }) => ({
     input_matrix: input,
     output_matrix: output,
-    instances: [],
+    instances: [] as any[],
   })),
 };
 
-// const train_dataset = require("./debug")._3aa6fb7a.analyzer;
-
-async function start() {
+async function start(): Promise<number[][]> {
   const train_session_id = uuid();
 
   const { declarations } = await analyzer.declarations({
     train_dataset,
   });
-  train_dataset.declarations = declarations;
+  (train_dataset as any).declarations = declarations;
 
   console.log("Creating declarations in Nucleoid...");
   await nucleoid.run(train_session_id, declarations.join("\n"));
@@ -129,10 +137,14 @@ async function start() {
   let test_index = 0;
 
   console.log("Initializing Nucleoid session with declarations...");
-  await nucleoid.run(test_session_id, train_dataset.declarations.join("\n"));
+  await nucleoid.run(
+    test_session_id,
+    (train_dataset as any).declarations.join("\n")
+  );
 
-  let result_matrix = Array.from({ length: test_output_matrix.length }, () =>
-    Array(test_output_matrix[0].length).fill(0)
+  let result_matrix: number[][] = Array.from(
+    { length: test_output_matrix.length },
+    () => Array(test_output_matrix[0].length).fill(0)
   );
 
   for (const { input_object } of instances.reverse()) {
@@ -161,4 +173,5 @@ async function start() {
   return result_matrix;
 }
 
-module.exports = start;
+export default start;
+

@@ -6,7 +6,7 @@ import terminal from "../terminal";
 import test from "../../lib/test";
 
 describe("Metrics service", () => {
-  before(() => nucleoid.start({ test: true }));
+  beforeAll(() => nucleoid.start({ test: true }));
   beforeEach(() => test.clear());
 
   it("retrieves memory details", async () => {
