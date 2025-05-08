@@ -1,4 +1,16 @@
-const OpenAI = require("openai");
+import { OpenAI } from "openai";
+
+interface GenerateParams {
+  model?: string;
+  messages?: Array<{ role: string, content: string }>;
+  temperature?: number;
+  max_tokens?: number;
+}
+
+interface Usage {
+  prompt_tokens: number;
+  completion_tokens: number;
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,7 +21,7 @@ async function generate({
   messages = [],
   temperature = 0,
   max_tokens = 2048,
-}) {
+}: GenerateParams = {}): Promise<any> {
   const {
     choices: [
       {
@@ -32,4 +44,4 @@ async function generate({
   return JSON.parse(content);
 }
 
-module.exports = { generate };
+export { generate };

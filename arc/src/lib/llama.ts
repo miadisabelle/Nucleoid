@@ -1,6 +1,6 @@
-const axios = require("axios").default;
+import axios from "axios";
 
-async function generate({ messages = [] }) {
+export async function generate({ messages = [] }: { messages?: { content: string }[] }) {
   const { data } = await axios({
     method: "POST",
     url: `http://${process.env.LLAMA_HOST}/generate`,
@@ -14,5 +14,3 @@ async function generate({ messages = [] }) {
 
   return data;
 }
-
-module.exports = { generate };

@@ -1,9 +1,59 @@
-const nucleoid = require("./nucleoid");
-const Matrix = require("../lib/Matrix");
-const Zoom = require("./Zoom");
-const llm = require("./llm");
+import { Matrix } from "../lib/Matrix";
+import { Zoom } from "./Zoom";
+import { generate } from "./llm";
+import { nucleoid } from "./nucleoid";
 
-async function instances({ train_dataset, test_input_matrix }) {
+interface Instance {
+  instance_name?: string;
+  input_object: {
+    x_position: number,
+    y_position: number,
+    object_matrix: number[][],
+  };
+  input_code?: string;
+  input_instance?: number[][];
+}
+
+interface TrainDataset {
+  declarations: any[];
+  dataset: {
+    input_matrix: number[][],
+    instances: Instance[],
+  }[];
+}
+
+interface InstancesParams {
+  train_dataset: TrainDataset;
+  test_input_matrix: number[][];
+}
+
+interface ValueParams {
+  test_session_id: string;
+  instance_name: string;
+  train_dataset: TrainDataset;
+  input_object: {
+    x_position: number,
+    y_position: number,
+    object_matrix: number[][],
+  };
+}
+
+interface OutputInstanceParams {
+  test_input_matrix: number[][];
+  result_matrix: number[][];
+  train_dataset: TrainDataset;
+  input_object: {
+    x_position: number,
+    y_position: number,
+    object_matrix: number[][],
+  };
+  output_value: any;
+}
+
+async function instances({
+  train_dataset,
+  test_input_matrix,
+}: InstancesParams): Promise<{ instances: Instance[] }> {
   console.log("Analyzing test_input_matrix...");
   console.log("");
 
@@ -14,7 +64,7 @@ async function instances({ train_dataset, test_input_matrix }) {
   const rows = test_input_matrix.length;
   const cols = test_input_matrix[0].length;
 
-  const { instances } = await llm.generate({
+  const { instances } = await generate({
     messages: [
       {
         role: "user",
@@ -48,7 +98,7 @@ async function instances({ train_dataset, test_input_matrix }) {
   });
 
   console.debug(`${instances.length} instances`);
-  instances.forEach((instance) => {
+  instances.forEach((instance: Instance) => {
     const input_instance = Zoom.enlarge(instance.input_object, rows, cols);
     instance.input_instance = input_instance;
     Matrix.toString(input_instance);
@@ -63,9 +113,9 @@ async function value({
   instance_name,
   train_dataset,
   input_object,
-}) {
+}: ValueParams): Promise<{ output_value: any }> {
   console.log("Calculating test value...");
-  const { input_code } = await llm.generate({
+  const { input_code } = await generate({
     messages: [
       {
         role: "user",
@@ -111,9 +161,9 @@ async function output_instance({
   train_dataset,
   input_object,
   output_value,
-}) {
+}: OutputInstanceParams): Promise<{ output_instance: number[][] }> {
   console.log("Extracting test output_instance...");
-  const { output_object } = await llm.generate({
+  const { output_object } = await generate({
     messages: [
       {
         role: "user",
@@ -149,4 +199,4 @@ async function output_instance({
   return { output_instance };
 }
 
-module.exports = { instances, value, output_instance };
+export { instances, value, output_instance };

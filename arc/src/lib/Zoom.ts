@@ -1,4 +1,4 @@
-function focus(matrix) {
+export function focus(matrix: number[][]): { x_position: number; y_position: number; object_matrix: number[][] } {
   const rows = matrix.length;
   const cols = matrix[0].length;
 
@@ -34,7 +34,11 @@ function focus(matrix) {
   };
 }
 
-function enlarge(matrix, rows, cols) {
+export function enlarge(
+  matrix: { x_position: number; y_position: number; object_matrix: number[][] },
+  rows: number,
+  cols: number
+): number[][] {
   const { x_position: xOffset, y_position: yOffset, object_matrix } = matrix;
 
   const originalArray = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -47,5 +51,3 @@ function enlarge(matrix, rows, cols) {
 
   return originalArray;
 }
-
-module.exports = { focus, enlarge };

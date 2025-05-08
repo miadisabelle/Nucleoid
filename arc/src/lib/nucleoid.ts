@@ -1,6 +1,6 @@
-const axios = require("axios").default;
+import axios from "axios";
 
-async function run(sessionId, data) {
+export async function run(sessionId: string, data: unknown): Promise<unknown> {
   const response = await axios({
     method: "POST",
     url: `https://nuc.land/sandbox/terminal/${sessionId}`,
@@ -12,5 +12,3 @@ async function run(sessionId, data) {
 
   return response.data.result;
 }
-
-module.exports = { run };

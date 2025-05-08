@@ -1,9 +1,47 @@
-const Matrix = require("./Matrix");
-const nucleoid = require("./nucleoid");
-const Zoom = require("./Zoom");
-const llm = require("./llm");
+import Matrix from "./Matrix";
+import Zoom from "./Zoom";
+import llm from "./llm";
+import nucleoid from "./nucleoid";
 
-async function declarations({ train_dataset }) {
+interface DeclarationResult {
+  declarations: string[];
+}
+
+interface InstanceObject {
+  x_position: number;
+  y_position: number;
+  object_matrix: number[][];
+}
+
+interface Instance {
+  input_object: InstanceObject;
+  output_object: InstanceObject;
+  input_instance?: number[][];
+  output_instance?: number[][];
+}
+
+interface InstancesResult {
+  instances: Instance[];
+}
+
+interface ValueParams {
+  train_session_id: string;
+  instance_name: string;
+  declarations: string[];
+  input_object: InstanceObject;
+  output_object: InstanceObject;
+}
+
+interface ValueResult {
+  input_code: string;
+  output_value: any;
+}
+
+async function declarations({
+  train_dataset,
+}: {
+  train_dataset: any;
+}): Promise<DeclarationResult> {
   console.log("Analyzing declarations...");
 
   const { declarations } = await llm.generate({
@@ -26,7 +64,15 @@ async function declarations({ train_dataset }) {
   return { declarations };
 }
 
-async function instances({ declarations, input_matrix, output_matrix }) {
+async function instances({
+  declarations,
+  input_matrix,
+  output_matrix,
+}: {
+  declarations: string[];
+  input_matrix: number[][];
+  output_matrix: number[][];
+}): Promise<InstancesResult> {
   console.log("Extracting instances...");
 
   const { instances } = await llm.generate({
@@ -54,7 +100,7 @@ async function instances({ declarations, input_matrix, output_matrix }) {
     ],
   });
 
-  instances.forEach((instance) => {
+  instances.forEach((instance: Instance) => {
     const { input_object, output_object } = instance;
     const rows = input_matrix.length;
     const cols = input_matrix[0].length;
@@ -63,7 +109,7 @@ async function instances({ declarations, input_matrix, output_matrix }) {
     instance.output_instance = Zoom.enlarge(output_object, rows, cols);
   });
 
-  instances.forEach((instance) => {
+  instances.forEach((instance: Instance) => {
     Matrix.toString(instance.input_instance);
     console.debug(
       JSON.stringify({
@@ -93,7 +139,7 @@ async function value({
   declarations,
   input_object,
   output_object,
-}) {
+}: ValueParams): Promise<ValueResult> {
   console.log("Calculating value...");
 
   const { input_code } = await llm.generate({
@@ -127,7 +173,7 @@ async function value({
   return { input_code, output_value };
 }
 
-module.exports = {
+export default {
   instances,
   declarations,
   value,

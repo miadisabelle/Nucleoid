@@ -1,16 +1,16 @@
-let _rows = 0;
-let _cols = 0;
+let _rows: number = 0;
+let _cols: number = 0;
 
-function init(length) {
+function init(length: number): void {
   _rows = length;
   _cols = length;
 }
 
-function merge(...matrices) {
-  const numRows = matrices[0].length;
-  const numCols = matrices[0][0].length;
+function merge(...matrices: number[][][]): number[][] {
+  const numRows: number = matrices[0].length;
+  const numCols: number = matrices[0][0].length;
 
-  let result = Array.from({ length: numRows }, () => Array(numCols).fill(0));
+  let result: number[][] = Array.from({ length: numRows }, () => Array(numCols).fill(0));
 
   for (let matrix of matrices) {
     for (let i = 0; i < numRows; i++) {
@@ -25,9 +25,9 @@ function merge(...matrices) {
   return result;
 }
 
-function subtract(matrix1, matrix2) {
-  const rows = matrix1.length;
-  const cols = matrix1[0].length;
+function subtract(matrix1: number[][], matrix2: number[][]): number[][] {
+  const rows: number = matrix1.length;
+  const cols: number = matrix1[0].length;
 
   // Ensure both matrices have the same dimensions
   if (matrix2.length !== rows || matrix2[0].length !== cols) {
@@ -35,12 +35,12 @@ function subtract(matrix1, matrix2) {
   }
 
   // Initialize a result matrix
-  let result = Array.from({ length: rows }, () => Array(cols).fill(0));
+  let result: number[][] = Array.from({ length: rows }, () => Array(cols).fill(0));
 
   // Perform element-wise subtraction
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      const num = matrix1[i][j] - matrix2[i][j];
+      const num: number = matrix1[i][j] - matrix2[i][j];
       result[i][j] = num > 0 ? num : 0;
     }
   }
@@ -48,19 +48,19 @@ function subtract(matrix1, matrix2) {
   return result;
 }
 
-function encode(matrix) {
+function encode(matrix: number[][]): number[][] {
   return matrix;
 }
 
-function decode(string) {
+function decode(string: number[][]): number[][] {
   return string;
 }
 
 // Experimental encoding/decoding
 /* eslint-disable no-unused-vars */
 
-function sparse_encode(matrix) {
-  let result = [];
+function sparse_encode(matrix: number[][]): string {
+  let result: string[] = [];
 
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[i].length; j++) {
@@ -73,10 +73,10 @@ function sparse_encode(matrix) {
   return result.join("-");
 }
 
-function sparse_decode(string) {
-  let matrix = Array.from({ length: _rows }, () => Array(_cols).fill(0));
+function sparse_decode(string: string): number[][] {
+  let matrix: number[][] = Array.from({ length: _rows }, () => Array(_cols).fill(0));
 
-  const entries = string.split("-");
+  const entries: string[] = string.split("-");
 
   entries.forEach((entry) => {
     const [value, position] = entry.split("@");
@@ -87,10 +87,10 @@ function sparse_decode(string) {
   return matrix;
 }
 
-function toString(matrix) {
-  decode(matrix).forEach((row) => {
+function toString(matrix: number[][] | string): void {
+  decode(matrix as number[][]).forEach((row) => {
     console.debug(`[${row.join(",")}]`);
   });
 }
 
-module.exports = { init, merge, encode, decode, subtract, toString };
+export { init, merge, encode, decode, subtract, toString, sparse_encode, sparse_decode };

@@ -1,12 +1,25 @@
-const axios = require("axios").default;
+import axios from "axios";
 
-async function generate({
+interface Message {
+  role: string;
+  content: string;
+}
+
+interface GenerateParams {
+  messages?: Message[];
+  temperature?: number;
+  top_p?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+}
+
+export async function generate({
   messages = [],
   temperature = 0,
   top_p = 1,
   presence_penalty = 0,
   frequency_penalty = 0,
-}) {
+}: GenerateParams): Promise<any> {
   const {
     data: {
       choices: [
@@ -35,5 +48,3 @@ async function generate({
   console.info({ prompt_tokens, completion_tokens });
   return JSON.parse(content);
 }
-
-module.exports = { generate };
