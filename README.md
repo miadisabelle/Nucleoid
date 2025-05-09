@@ -143,7 +143,7 @@ The idea of plasticity in AI, especially in logic-based systems like those in Ne
 
 ## Hello World :zap:
 
-```javascript
+```typescript
 User:
 > 'Define human with name'
 
@@ -163,7 +163,7 @@ class Human {
 }
 ```
 
-```javascript
+```typescript
 User:
 > 'All humans are mortal'
 
@@ -178,7 +178,7 @@ Assistant: All humans are mortal
 $Human.mortal = true;
 ```
 
-```javascript
+```typescript
 User:
 > 'Create a human with name "Socrates"'
 
@@ -195,7 +195,7 @@ var human1 = new Human('Socrates');
 // Result: {"id":"human1","name":"Socrates","mortal":true}
 ```
 
-```javascript
+```typescript
 User:
 > 'Is human with name 'Socrates' mortal?'
 
