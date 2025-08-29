@@ -4,6 +4,7 @@ import { Config, Data, Options } from "./types";
 
 import chalk from "chalk";
 import { init } from "./config";
+import * as process from "./process";
 import runtime from "./runtime";
 
 function start(config: Config = {}) {
@@ -12,7 +13,7 @@ function start(config: Config = {}) {
   console.log("🌿 " + chalk.greenBright("Nucleoid") + " runtime is started");
   console.log(chalk.blueBright("🌎 Inspired by Nature\n"));
 
-  // process.init();
+  process.init();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
