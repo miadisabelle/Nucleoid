@@ -3,6 +3,12 @@
 - **Iteration**: 1 of 4
 - **Focus**: Initial analysis of the `./python/` directory.
 
+## Framework Application Goal
+
+The purpose of this document is to produce a specification that guides a downstream LLM. By understanding this analysis, the LLM can provide purpose-driven explanations to an end-user. Instead of just describing what the code *is*, the LLM will explain what the code enables a user to *create*, leading to more intuitive and effective interaction.
+
+---
+
 ## Phase 1: Reverse-Engineering (Creative Archaeology)
 
 ### A. Core Creative Intent
