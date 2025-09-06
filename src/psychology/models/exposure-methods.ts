@@ -24,7 +24,6 @@ export class AcceptanceCommitmentTherapy implements TherapeuticModel {
     'Challenges the struggle with internal experiences'
   ];
 
-  applyIntervention(belief: Belief): TherapeuticIntervention;
   applyIntervention(target: Belief | Verdict | Behavior): TherapeuticIntervention {
     const belief = target as Belief;
     return {
@@ -93,7 +92,6 @@ export class AttachmentTheory implements TherapeuticModel {
     'Exposes internalized attachment models'
   ];
 
-  applyIntervention(verdict: Verdict): TherapeuticIntervention;
   applyIntervention(target: Verdict | Belief | Behavior): TherapeuticIntervention {
     const verdict = target as Verdict;
     return {
@@ -171,7 +169,6 @@ export class StructuralTensionApproach implements TherapeuticModel {
     'Exposes hidden belief systems'
   ];
 
-  applyIntervention(behavior: Behavior): TherapeuticIntervention;
   applyIntervention(target: Behavior | Belief | Verdict): TherapeuticIntervention {
     const behavior = target as Behavior;
     return {

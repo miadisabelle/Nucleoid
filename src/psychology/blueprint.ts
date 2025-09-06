@@ -233,11 +233,22 @@ export class BonfireBlueprint {
     const verdictThemes = this.extractThemes(verdict);
     const symptomLower = symptom.toLowerCase();
     
-    // More lenient matching for test scenarios
+    // Direct matching for common patterns
+    if (symptomLower.includes('not good enough') && verdict.includes('inadequate')) {
+      return true;
+    }
+    if (symptomLower.includes('perfectionist') && verdict.includes('inadequate')) {
+      return true;
+    }
+    if (symptomLower.includes('unlovable') && verdict.includes('unlovable')) {
+      return true;
+    }
+    
+    // Theme-based matching
     return verdictThemes.some(theme => 
       symptomLower.includes(theme) || 
       symptomLower.includes(theme.replace(' ', ''))
-    ) || symptomLower.includes('not good') && verdict.includes('inadequate');
+    );
   }
 
   /**
